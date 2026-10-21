@@ -8,6 +8,11 @@ import { verifyS2sHeader, S2S_HEADER } from './s2s-verify.js';
 import type { EsetProtectRegion } from './types.js';
 import { isValidRegion } from './client.js';
 
+/**
+ * Start the HTTP MCP server on MCP_HTTP_HOST:MCP_HTTP_PORT. Resolves with the
+ * listening server; rejects if listening fails. POST /mcp checks X-Gateway-S2S
+ * (401) before the Content-Length body cap (413).
+ */
 export async function startHttpServer(): Promise<HttpServer> {
   const S2S_SECRET = process.env.CONDUIT_S2S_SECRET || '';
   const port = parseInt(process.env.MCP_HTTP_PORT || '8080', 10);
@@ -118,7 +123,7 @@ export async function startHttpServer(): Promise<HttpServer> {
 if (process.env.VITEST !== 'true') {
   if (process.env.MCP_TRANSPORT === 'http') {
     startHttpServer().catch((error) => {
-      logger.error('Fatal startup error', error);
+      logger.error('Fatal startup error', { error: (error as Error).message });
       process.exit(1);
     });
   } else {
