@@ -54,6 +54,13 @@ Each ESET Connect API domain (device, incident, vulnerability, patch, and user m
 - `esetprotect_get_user` - get a user by UUID.
 - `esetprotect_batch_get_users` - get multiple users by UUID in one call (atomic - all or none).
 
+## Request limits
+
+- HTTP request bodies are capped at 256 KiB (262144 bytes). After the `X-Gateway-S2S` check passes, a `Content-Length` above the cap returns 413 with a JSON-RPC error; bodies without `Content-Length` are capped by the MCP SDK transport. Unauthenticated requests still get 401 first.
+- `tools/call` arguments are capped at 10,000 elements (every array item and object key at any depth). Larger inputs return an `isError` tool result and are never dispatched.
+
+These limits address CVE-2026-111768 / GHSA-46jr-4wx8-v453 (memory exhaustion during validation) and GHSA-f897-62hf-6gxq (no request body / batch cap).
+
 ## Scope
 
 This is a v1, read-only fleet/security-visibility surface. Explicitly deferred: device move/rename and batch import, detection and detection-group resolve, EDR rule and rule-exclusion create/update/delete, and any asset-management group create/delete/move/rename endpoints. These are mutation/provisioning actions out of scope for a read-only monitoring connector and can be added as a follow-up.
